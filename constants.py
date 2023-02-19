@@ -2,7 +2,7 @@
 
 amino_acid_list = ["L-arginine", "L-valine", "L-methionine", "L-glutamate", "L-glutamine", "L-tyrosine", "L-tryptophan",
                    "L-proline", "L-cysteine", "L-histidine", "L-asparagine", "L-aspartate", "L-phenylalanine",
-                   "L-threonine", "L-lysine", "L-serine", "L-isoleucine", "glycine", "L-alanine", "L-Leucine"]
+                   "L-threonine", "L-lysine", "L-serine", "L-isoleucine", "glycine", "L-alanine", "L-leucine"]
 
 # DICTIONARY MAPPING AMINO ACID ABBREVIATION
 
@@ -26,7 +26,7 @@ amino_acid_dict = {
     "I": {"name": "L-isoleucine"},
     "G": {"name": "glycine"},
     "A": {"name": "L-alanine"},
-    "L": {"name": "L-Leucine"}
+    "L": {"name": "L-leucine"}
 }
 
 # LIST OF COFACTORS
@@ -51,5 +51,7 @@ path_dict = {
     "eramosum_adam": "../sihumix/eramosum_adam/eramosum_adam.smiles_list",
     "eramosum_cimIV": "../sihumix/eramosum_cimIV/eramosum_cimIV.smiles_list",
     "lplantarum_adam": "../sihumix/lplantarum_adam/lplantarum_adam.smiles_list",
-    "lplantarum_cimIV": "../sihumix/lplantarum_cimIV/lplantarum_cimIV.smiles_list"
+    "lplantarum_cimIV": "../sihumix/lplantarum_cimIV/lplantarum_cimIV.smiles_list",
+    "leucine": "../L_leucine.smiles_list"
 }
+
