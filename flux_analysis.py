@@ -1,4 +1,4 @@
-import pulp
+from pulp import LpMaximize, LpProblem, LpStatus, lpSum, LpVariable
 import networkx
 import numpy as np
 import constants
@@ -92,19 +92,28 @@ for r in reactions:
 # Define the LP problem
 prob = LpProblem('maximize_protein_production', LpMaximize)
 
-# Define the decision variables
+# @tobi Here begins the part were I am not sure how to porceed
+# Define the decision variables: reactions with lower and upper bounds
 fluxes = {}
 for r in reactions:
-    fluxes[r] = pulp.LpVariable(r, lowBound=lb[r], upBound=ub[r])
+    fluxes[r] = LpVariable(r, lowBound=lb[r], upBound=ub[r])
 
 # Define the objective function
-obj_func = pulp.lpSum(fluxes[reaction] for reaction in reactions)
+# I am still not sure if the reaction for the biomass should be explicitly
+# defined as the objective function. Now it is just inserted as a variable the same way as all the other varaibles
+obj_func = lpSum(fluxes[reaction] for reaction in reactions)
 prob += obj_func
 
 # Define the constraints based on the stoichiometric matrix
+# Idea: for each metabolite (rows in stochiometric matrix) define a constraint 
+# that has the rule that the sum of each reaction flux multiplied by the stochiometry should be 0
+# eg -3 H2O*flux + 2 H2O*flux + 4 H2O*flux = 0
 for i in range(S.shape[0]):
-    flux = pulp.lpSum(S[i, j] * fluxes[reactions[j]] for j in range(S.shape[1]))
+    flux = lpSum(S[i, j] * fluxes[reactions[j]] for j in range(S.shape[1]))
     prob += flux == 0
+
+# print model
+print(prob)
 
 # Solve the LP problem
 prob.solve()
