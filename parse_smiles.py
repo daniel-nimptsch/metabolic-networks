@@ -4,7 +4,7 @@ import constants
 import util
 
 def main():
-    G = parse_smiles("ecoli_adam", add_leucine=True)
+    G = parse_smiles("ecoli_cimIV", add_leucine=True)
 
     # # --- WP1 -> 3. breadth first search (all amino acids need to be found) -------------
     # # --- to find L-Leucine the data needs to be updated (see moodle)
