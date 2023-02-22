@@ -52,6 +52,27 @@ path_dict = {
     "eramosum_cimIV": "../sihumix/eramosum_cimIV/eramosum_cimIV.smiles_list",
     "lplantarum_adam": "../sihumix/lplantarum_adam/lplantarum_adam.smiles_list",
     "lplantarum_cimIV": "../sihumix/lplantarum_cimIV/lplantarum_cimIV.smiles_list",
+}
+
+leucine_path = { 
     "leucine": "../L_leucine.smiles_list"
 }
 
+proteom_dict = {
+    "acacae_adam": "./data/Proteom/Anaerostipes_caccae.faa",
+    "acacae_cimIV": "./data/Proteom/Anaerostipes_caccae.faa",
+    "blongum_adam": "./data/Proteom/Bifidobacterium_longum.faa",
+    "blongum_cimIV": "./data/Proteom/Bifidobacterium_longum.faa",
+    "bproducta_adam": "./data/Proteom/Blautia_producta.faa",
+    "bproducta_cimIV": "./data/Proteom/Blautia_producta.faa",
+    "btheta_adam": "./data/Proteom/Bacteroides_thetaiotaomicron.faa",
+    "btheta_cimIV": "./data/Proteom/Bacteroides_thetaiotaomicron.faa",
+    "cbuty_adam": "./data/Proteom/Clostridium_butyricum.faa",
+    "cbuty_cimIV": "./data/Proteom/Clostridium_butyricum.faa",
+    "ecoli_adam": "./data/Proteom/Escherichia_coli.faa",
+    "ecoli_cimIV": "./data/Proteom/Escherichia_coli.faa",
+    "eramosum_adam": "./data/Proteom/Erysipelatoclostridium_ramosum.faa",
+    "eramosum_cimIV": "./data/Proteom/Erysipelatoclostridium_ramosum.faa",
+    "lplantarum_adam": "./data/Proteom/Lactobacillus_plantarum.faa",
+    "lplantarum_cimIV": "./data/Proteom/Lactobacillus_plantarum.faa",
+}
