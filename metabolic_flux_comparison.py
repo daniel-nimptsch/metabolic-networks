@@ -6,7 +6,6 @@ import os
 import pandas as pd
 import networkx as nx
 # from pyvis.network import Network
-organism_name = 'ecoli_cimIV'
 
 def analyze_organism(organism_name):
     G = parse_smiles.AS_bio_pathway_for_organism(organism_name)

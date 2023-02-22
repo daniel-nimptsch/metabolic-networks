@@ -5,7 +5,6 @@ import util
 
 def AS_bio_pathway_for_organism(organism_name):
     G = parse_smiles(organism_name, add_leucine=True)
-
     # # --- WP1 -> 6. Create the full Amino Acid Biosynthesis Pathway ----------------------
     H = nx.DiGraph()
     P = traversal.get_subgraph_glucose_S(G)
@@ -14,7 +13,6 @@ def AS_bio_pathway_for_organism(organism_name):
     R = P.copy()
     R.remove_nodes_from(n for n in P if n not in H)
     R.remove_edges_from(e for e in P.edges if e not in H.edges)
-
     return R
 
 def main():
@@ -131,6 +129,7 @@ def parse_smiles(organism: str, add_leucine: bool=False):
             G.nodes[reaction]['educts'] = educts_counts # add dict of educt counts to reaction node. important for flux 
             G.nodes[reaction]['products'] = products_counts # same for products
             G.nodes[reaction]['group'] = 1
+            G.nodes[reaction]['description'] = react
 
             for educt in educts_counts:
                 G.add_edge(educt, reaction)
@@ -152,6 +151,7 @@ def parse_smiles(organism: str, add_leucine: bool=False):
                 G.nodes[reaction]['educts'] = products_counts
                 G.nodes[reaction]['products'] = educts_counts
                 G.nodes[reaction]['group'] = 1
+                G.nodes[reaction]['description'] = react
 
                 for educt in educts_counts:
                     G.add_edge(reaction, educt)

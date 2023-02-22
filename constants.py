@@ -32,6 +32,7 @@ amino_acid_dict = {
 # LIST OF COFACTORS
 
 cofactors = ["AMP", "ADP", "ATP", "NAD(+)", "NADH", "NADP(+)", "NADPH", "CTP", "CoA", "H2O", "NH4(+)", "hydrogen sulfide"]
+all_cofactors = ["AMP", "ATP", "ADP", "GDP", "NAD(+)", "NADH", "NADP(+)", "NADPH", "FAD", "FADH2", "UTP", "CTP", "heme b", "CoA", "FMN", "H2O", "NH4(+)", "phosphate", "CO2"]
 
 # LIST TO SMILES_LIST
 

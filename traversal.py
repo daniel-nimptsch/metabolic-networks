@@ -54,6 +54,7 @@ def get_subgraph_glucose_S(G: nx.DiGraph):
 
 def breadth_first_search_reverse_amino_acid(G: nx.DiGraph, amino_acid: str="all"): #TODO work in progress
     queue.__init__()
+
     # Mark all nodes as not available
     for node in G.nodes:
         G.nodes[node]['available'] = False
@@ -64,9 +65,12 @@ def breadth_first_search_reverse_amino_acid(G: nx.DiGraph, amino_acid: str="all"
     else:
         G.nodes[amino_acid]['available'] = True
     available_nodes = [x for x,y in G.nodes(data=True) if y['available']==True] # find all available nodes
+
     # Add cofactors
     for cofactor in constants.cofactors:
-        G.nodes[cofactor]['available'] = False
+        try: G.nodes[cofactor]['available'] = True
+        except KeyError:
+            print(f'{cofactor} is not in network')
 
     for product in available_nodes:
         for reaction_to_check in G.predecessors(product): # find all reactions that are needed
