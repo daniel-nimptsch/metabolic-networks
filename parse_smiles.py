@@ -3,8 +3,22 @@ import traversal
 import constants
 import util
 
+def AS_bio_pathway_for_organism(organism_name):
+    G = parse_smiles(organism_name, add_leucine=True)
+
+    # # --- WP1 -> 6. Create the full Amino Acid Biosynthesis Pathway ----------------------
+    H = nx.DiGraph()
+    P = traversal.get_subgraph_glucose_S(G)
+    for amino_acid in constants.amino_acid_list:
+        H = nx.compose(H, traversal.breadth_first_search_reverse_amino_acid(G, amino_acid))
+    R = P.copy()
+    R.remove_nodes_from(n for n in P if n not in H)
+    R.remove_edges_from(e for e in P.edges if e not in H.edges)
+
+    return R
+
 def main():
-    G = parse_smiles("ecoli_adam", add_leucine=True)
+    G = parse_smiles("ecoli_cimIV", add_leucine=True)
 
     # # --- WP1 -> 3. breadth first search (all amino acids need to be found) -------------
     # # --- to find L-Leucine the data needs to be updated (see moodle)
@@ -51,7 +65,7 @@ def parse_smiles(organism: str, add_leucine: bool=False):
         entry = file.read().split("\n\n")
 
     if add_leucine:
-        with open(str(constants.path_dict['leucine']), "r") as file:
+        with open(str(constants.leucine_path['leucine']), "r") as file:
             entry.append(file.read())
 
     Biggs = []
@@ -106,7 +120,7 @@ def parse_smiles(organism: str, add_leucine: bool=False):
 
             reaction = r_attr_BiggID
         
-            # create the ceaction node
+            # create the reaction node
             G.add_node(reaction)
             G.nodes[reaction]['BiggId'] = r_attr_BiggID
             G.nodes[reaction]['MetaNetXId'] = r_attr_MetaNetXId
@@ -116,13 +130,14 @@ def parse_smiles(organism: str, add_leucine: bool=False):
             G.nodes[reaction]['reaction'] = True
             G.nodes[reaction]['educts'] = educts_counts # add dict of educt counts to reaction node. important for flux 
             G.nodes[reaction]['products'] = products_counts # same for products
+            G.nodes[reaction]['group'] = 1
 
             for educt in educts_counts:
                 G.add_edge(educt, reaction)
-                G.add_node(educt, available=False, reaction=False)
+                G.add_node(educt, available=False, reaction=False, group=2)
             for product in products_counts:
                 G.add_edge(reaction, product)
-                G.add_node(product, available=False, reaction=False)
+                G.add_node(product, available=False, reaction=False, group=2)
 
             # add all reactions that are reversible
             if G.nodes[reaction]['Reversible'] == 'True':
@@ -136,6 +151,7 @@ def parse_smiles(organism: str, add_leucine: bool=False):
                 G.nodes[reaction]['reaction'] = True
                 G.nodes[reaction]['educts'] = products_counts
                 G.nodes[reaction]['products'] = educts_counts
+                G.nodes[reaction]['group'] = 1
 
                 for educt in educts_counts:
                     G.add_edge(reaction, educt)
@@ -147,7 +163,7 @@ def parse_smiles(organism: str, add_leucine: bool=False):
         
         #add availiable edcuts
         for educt in constants.cofactors:
-            G.add_node(educt, available=True, reaction=False)
+            G.add_node(educt, available=True, reaction=False, group=2)
 
     if (len(Biggs) != len(set(Biggs))):
         print("Warning: duplicated BiggIds!")
