@@ -54,15 +54,20 @@ def get_subgraph_glucose_S(G: nx.DiGraph):
 
 def breadth_first_search_reverse_amino_acid(G: nx.DiGraph, amino_acid: str="all"): #TODO work in progress
     queue.__init__()
-    #remove cofactors as they will be added when needed
-    for cofactor in constants.cofactors:
-        G.add_node(cofactor, available=False)
+    # Mark all nodes as not available
+    for node in G.nodes:
+        G.nodes[node]['available'] = False
+
     if(amino_acid == "all"):
         for amino_acid in constants.amino_acid_list:
-            G.add_node(amino_acid, available=True)
+            G.nodes[amino_acid]['available'] = True
     else:
-        G.add_node(amino_acid, available=True)
+        G.nodes[amino_acid]['available'] = True
     available_nodes = [x for x,y in G.nodes(data=True) if y['available']==True] # find all available nodes
+    # Add cofactors
+    for cofactor in constants.cofactors:
+        G.nodes[cofactor]['available'] = False
+
     for product in available_nodes:
         for reaction_to_check in G.predecessors(product): # find all reactions that are needed
             queue.put(reaction_to_check) # add reaction to queue
@@ -72,16 +77,17 @@ def breadth_first_search_reverse_amino_acid(G: nx.DiGraph, amino_acid: str="all"
         if(G.nodes[current_reaction]['available'] == True): # skip already added reactions
             continue
         for educt_needed in G.predecessors(current_reaction): # add educts of successfull reactions
-            G.add_node(educt_needed, available=True)
-            G.add_node(current_reaction, available=True) # reactions that are "available" don't need to be visited again
-            for reaction_needed in G.predecessors(educt_needed):
-                queue.put(reaction_needed)
+            if educt_needed not in constants.cofactors:
+                G.nodes[educt_needed]['available'] = True
+                G.nodes[current_reaction]['available'] = True
+                for reaction_needed in G.predecessors(educt_needed):
+                    queue.put(reaction_needed)
 
     ret_list  = []
     for ret in G.nodes:
         if G.nodes[ret]['available'] == True:
             ret_list.append(ret)
-    return G.subgraph(ret_list)
+    return G.subgraph(ret_list).copy()
 
 def amino_acid_reverse_alternative(G: nx.DiGraph, amino_acid: str="all"):
     for cofactor in constants.cofactors:
