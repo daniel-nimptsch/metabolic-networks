@@ -119,33 +119,42 @@ def flux_analysis(G, protein):
     # print(status)
 
     # Add flux attribute to reactions nodes
+    # and compute the realtive flux for products and educts
     for j, reaction in enumerate(reactions):
         flux = reaction_variables[reaction].varValue 
-        G.nodes[reaction]['flux'] = flux   
+        flux = abs(flux)
+        G.nodes[reaction]['flux'] = flux
+        educts_dict = G.nodes[reaction]['educts'].copy()
+        products_dict = G.nodes[reaction]['products'].copy()
+        educts_flux_dict = educts_dict.copy()
+        products_flux_dict = products_dict.copy()
+        educts_sum = sum(educts_dict.values())
+        products_sum = sum(products_dict.values())
+        # print(f"flux: {flux}")
+        # print(f"educts_sum: {educts_sum}" )
+        # print(f"products_sum: {products_sum}")
+        for educt, value in educts_dict.items():
+            educt_flux = value * flux / educts_sum
+            educts_flux_dict[educt] = educt_flux
+            # print(f"educt_flux: {educt_flux}")
+        for product, value in products_dict.items():
+            product_flux = value * flux / products_sum
+            products_flux_dict[product] = product_flux
+            # print(f"product_flux: {product_flux}")
+        G.nodes[reaction]['educts_flux'] = educts_flux_dict
+        G.nodes[reaction]['products_flux'] = products_flux_dict
     
-    # # Convert the stoichiometric matrix to pd df 
-    # S_df = pd.DataFrame(S, index=metabolites, columns=reactions)
-    #
-    # # Create a dictionary to store the flux values for reaction nodes
-    # flux_dict = nx.get_node_attributes(G, 'flux')
-    #
-    # # Convert the flux dictionary to a pandas series
-    # flux_series = pd.Series(flux_dict)
-    #
-    # # Select the flux values for reaction nodes
-    # reaction_flux = flux_series[flux_series.index.isin(reactions)]
-    #
-    # # Calculate the sum of the absolute values of the flux for each metabolite
-    # abs_flux_sum = S_df.abs().dot(reaction_flux.abs())
-    #
-    # # Calculate the relative flux for each metabolite
-    # relative_flux = (S_df * reaction_flux).sum(axis=1) / abs_flux_sum
-    # relative_flux = relative_flux.fillna(0)
-
+    # Add flux to metabolite nodes
+    # flux for a metabolite is the sum of all relative educt and product flux'
     for metabolite in metabolites:
-        G.nodes[metabolite]['flux'] = 0
-        # G.nodes[metabolite]['flux'] = relative_flux[metabolite]
+        metabolite_flux = 0
+        for reaction in reactions:
+            metabolite_flux += G.nodes[reaction]['educts_flux'].get(metabolite, 0)
+            metabolite_flux += G.nodes[reaction]['products_flux'].get(metabolite, 0)
+        # print(f"metabolite_flux: {metabolite_flux}")
+        G.nodes[metabolite]['flux'] = metabolite_flux 
 
     # return the graph and the stochiometric matrix
-    return[G, S]
+    return G
+    # return[G, S]
     
