@@ -31,10 +31,10 @@ amino_acid_dict = {
 
 # LIST OF COFACTORS
 
-# cofactors = ["AMP", "ADP", "ATP", "NAD(+)", "NADH", "NADP(+)", "NADPH", "CTP", "CoA", "H2O", "NH4(+)", "hydrogen sulfide"]
-# cofactors = ["AMP", "ATP", "ADP", "GDP", "NAD(+)", "NADH", "NADP(+)", "NADPH", "FAD", "FADH2", "UTP", "CTP", "heme b", "CoA", "FMN", "H2O", "NH4(+)", "phosphate", "CO2", "hydrogen sulfide"]
-cofactors = ["AMP", "ATP", "ADP", "GDP", "NAD(+)", "NADH", "NADP(+)", "NADPH", "FAD", "FADH2", "UTP", "CTP", "heme b", "CoA", "FMN", "H2O", "NH4(+)", "phosphate", "hydrogen sulfide"]
-all_cofactors = ["AMP", "ATP", "ADP", "GDP", "NAD(+)", "NADH", "NADP(+)", "NADPH", "FAD", "FADH2", "UTP", "CTP", "heme b", "CoA", "FMN", "H2O", "NH4(+)", "phosphate", "CO2", "hydrogen sulfide"]
+cofactors = ["AMP", "ADP", "ATP", "NAD(+)", "NADH", "NADP(+)",
+             "NADPH", "CTP", "CoA", "H2O", "NH4(+)", "hydrogen sulfide"]
+all_cofactors = ["AMP", "ATP", "ADP", "GDP", "NAD(+)", "NADH", "NADP(+)", "NADPH", "FAD", "FADH2",
+                 "UTP", "CTP", "heme b", "CoA", "FMN", "H2O", "NH4(+)", "phosphate", "CO2", "hydrogen sulfide"]
 
 # LIST TO SMILES_LIST
 
@@ -55,11 +55,16 @@ path_dict = {
     "eramosum_cimIV": "../sihumix/eramosum_cimIV/eramosum_cimIV.smiles_list",
     "lplantarum_adam": "../sihumix/lplantarum_adam/lplantarum_adam.smiles_list",
     "lplantarum_cimIV": "../sihumix/lplantarum_cimIV/lplantarum_cimIV.smiles_list",
-}
-
-leucine_path = { 
     "leucine": "../L_leucine.smiles_list"
 }
+
+leucine_path = {
+    "leucine": "../L_leucine.smiles_list"
+}
+
+COLOR_LIST_COMPOUNDS = ["blue", "yellow", "orange", "brown", "peach", "purple", "red" "cyan", "indigo", "palegreen", "steelblue", "tan", "peru"
+                        "lavender", "maroon", "navy", "olive", "mauve", "teal", "umber", "murk", "black", "gray"]
+COLOR_LIST_TARGET = ["magenta"]
 
 proteom_dict = {
     "acacae_adam": "./data/Proteom/Anaerostipes_caccae.faa",
