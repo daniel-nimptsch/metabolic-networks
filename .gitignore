@@ -2,3 +2,4 @@ lib
 __pycache__
 *.html
 pyrightconfig.json 
+.Rproj.user

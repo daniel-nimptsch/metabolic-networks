@@ -60,8 +60,15 @@ def flux_analysis(G, protein):
         G.nodes[input_reaction]['products'] = {str(cofactor): 1}
 
     # Collect all metabolites and reaction node names
-    metabolites = [x for x,y in G.nodes(data=True) if y['reaction']==False]
-    reactions = [x for x,y in G.nodes(data=True) if y['reaction']==True]
+    # metabolites = [x for x,y in G.nodes(data=True) if y['reaction']==False]
+    # reactions = [x for x,y in G.nodes(data=True) if y['reaction']==True]
+    metabolites = []
+    reactions = []
+    for key, value in dict(G.nodes(data='reaction')).items():
+        if value == True:
+            reactions.append(key)
+        else:
+            metabolites.append(key)
 
     # Construct the stochiometric matrix
     S = np.zeros((len(metabolites), len(reactions)))
@@ -155,6 +162,6 @@ def flux_analysis(G, protein):
         G.nodes[metabolite]['flux'] = metabolite_flux 
 
     # return the graph and the stochiometric matrix
-    return G
+    return G.copy()
     # return[G, S]
     

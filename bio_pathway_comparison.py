@@ -1,16 +1,14 @@
 import queue
 import networkx as nx
-from networkx.algorithms import isomorphism
+# from networkx.algorithms import isomorphism
 import parse_smiles
 import traversal
 import constants
 # import util
-# from pyvis.network import Network
+from pyvis.network import Network
 from queue import SimpleQueue
 
-# from bio_pathway_comparison import find_synthesis_paths, reaction_paths_unique_test
-# organism_name = "ecoli_cimIV"
-queue = SimpleQueue()
+organism_name = "ecoli_cimIV"
 
 # Function to print if amino acids or cofactors are in the graph
 def print_AS_cofactor_info(G):
@@ -39,6 +37,7 @@ def print_metabolite_reactions(G, metabolite):
 # Save results as files!
 def analysis():
     for organism_name in constants.path_dict:
+
         G = parse_smiles.parse_smiles(organism_name, add_leucine=True)
         print(f'{organism_name} full:', len(list(G.nodes)))
         H = nx.DiGraph()
@@ -49,43 +48,42 @@ def analysis():
         R.remove_nodes_from(n for n in P if n not in H)
         R.remove_edges_from(e for e in P.edges if e not in H.edges)
         print(f'{organism_name} AS-bio-pw:', len(list(R.nodes)))
-        print("Metabolite info full:")
-        print_AS_cofactor_info(G)
+        # print("Metabolite info full:")
+        # print_AS_cofactor_info(G)
         print("Metabolite info AS-bio-pw:")
         print_AS_cofactor_info(R)
+        # for amino_acid in constants.amino_acid_list:
+        #     print(amino_acid)    
+        #     T, paths = find_synthesis_paths(R, amino_acid)
 
-        for amino_acid in constants.amino_acid_list:
-            print(amino_acid)    
-            # T, paths = find_synthesis_paths(R, amino_acid)
         # Test
-        # T, paths = find_synthesis_paths(R, 'L-leucine')
-
-        # Visualization
+        # paths = find_synthesis_paths(R, 'L-leucine')
+        paths = find_synthesis_paths(R, 'L-leucine', max_length=1000)
+        # len(paths)
+        #
+        # to_remove = []
+        # for i, path in enumerate(paths):
+        #     if not proof_path(R, paths[i], 'L-leucine'):
+        #         to_remove.append(i)
+        # len(to_remove)
+        # 
+        # for i in range(0, 10):
+        #     print(set(list(paths[i].nodes)))
+        #
+        # # Visualization
         # nt = Network('1000px', '1000px', select_menu=True, filter_menu=True)
-        # nt.from_nx(paths[0])
-        # nt.show('output/nx.html')
+        # nt.from_nx(paths[10])
+        # nt.show('test.html')
 
-def reaction_paths_unique_test(path_graph, g, synthesis_paths, i):
-    graph_found = False
-    if len(list(path_graph.nodes)) < len(list(g.nodes)):
-        if isomorphism.DiGraphMatcher(G1=g, G2=path_graph, node_match=None, edge_match=None).subgraph_is_isomorphic():
-            graph_found = True
-            return [synthesis_paths, graph_found]
-    elif len(list(path_graph.nodes)) > len(list(g.nodes)):
-        if isomorphism.DiGraphMatcher(G1=path_graph, G2=g, node_match=None, edge_match=None).subgraph_is_isomorphic():
-            graph_found = True
-            synthesis_paths[i] = path_graph
-            return [synthesis_paths, graph_found]
-    else:
-        if isomorphism.DiGraphMatcher(G1=path_graph, G2=g, node_match=None, edge_match=None).is_isomorphic():
-            graph_found = True
-            return [synthesis_paths, graph_found]
-    return[synthesis_paths, graph_found]
 
-def find_synthesis_paths(G: nx.DiGraph, amino_acid: str):
+# For a found path proof if the path is legal by
+# walking again through the nodes of the main path G
+def proof_path(G:nx.DiGraph, path:nx.DiGraph, amino_acid:str):
+    queue = SimpleQueue()
     queue.__init__()
-    # Initialize a list to store all paths that synthesize the amino acid
-    synthesis_paths = []
+    for node in path.nodes():
+        path.nodes[node]['preds_avail'] = False
+        path.nodes[node]['visited'] = False
     # Mark all nodes as not available
     for node in G.nodes:
         G.nodes[node]['available'] = False
@@ -98,41 +96,191 @@ def find_synthesis_paths(G: nx.DiGraph, amino_acid: str):
         except KeyError:
             print(f'{cofactor} is not in network')
     # First queue input. Empty digraph and AS
-    queue.put([amino_acid, nx.DiGraph()])
+    queue.put(amino_acid)
+    while not queue.empty():
+        current_node = queue.get()
+        # print(current_node)
+        # print(queue.qsize())
+        # print(queue.empty())
+        path.nodes[current_node]['visited'] = True
+        # Check if all required preds are available for the current node
+        preds_available = all(G.nodes[pred]['available'] for pred in G.predecessors(current_node))
+        # print(f'preds avail: {preds_available}')
+        # If all preds are available, add the current path to the synthesis_paths list
+        if preds_available:
+            path.nodes[current_node]['preds_avail'] = True
+        else:
+            # if there are no preds
+            no_preds = len(list(path.predecessors(current_node))) == 0 
+            # print(f'no preds: {no_preds}')
+            if not no_preds:
+                # print(list(path.predecessors(current_node)))
+                for pred in path.predecessors(current_node):
+                    visited = path.nodes[pred]['visited']
+                    # print(f'visited: {visited}')
+                    if not visited:
+                        # print(f'put pred in queue: {pred}')
+                        queue.put(pred)
+    proof_list = []
+    for node in path.nodes():
+        proof_list.append(path.nodes[node]['preds_avail'])
+    if all(proof_list):
+        # print('exit: True')
+        return True
+    else:
+        # print('exit: False')
+        return False   
+
+# def find_synthesis_paths(G, amino_acid, max_length=None):
+#     """
+#     Find all possible paths from which an amino acid can be synthesized
+#     given a directed networkx graph with reactions and metabolites as nodes.
+#
+#     Args:
+#     - G: networkx.DiGraph, the directed graph
+#     - amino_acid: str, the amino acid to be synthesized
+#     - max_length: int, optional, the maximum length of a path
+#
+#     Returns:
+#     - synthesis_paths: list of lists, each inner list contains the nodes along a
+#     path that synthesizes the amino acid
+#     """
+#     # Mark all nodes as not available
+#     for node in G.nodes:
+#         G.nodes[node]['available'] = False
+#     # Add D-glucose
+#     G.nodes['D-glucose']['available'] = True
+#     # Add cofactors
+#     for cofactor in constants.cofactors:
+#         try:
+#             G.nodes[cofactor]['available'] = True
+#         except KeyError:
+#             print(f'{cofactor} is not in network')
+#
+#     # initialize synthesis_paths and seen_nodes
+#     synthesis_paths = []
+#     seen_nodes = set()
+#
+#     # define helper function to recursively search for synthesis paths
+#     def search_path(node, current_path):
+#         # add node to current path
+#         current_path.append(node)
+#         print(f'node : {node}')
+#
+#         # if the current node is not the amino_acid and not available, return
+#         # if node != amino_acid and not G.nodes[node]['available']:
+#         #     return
+#
+#         # if the current node has already been seen, return to avoid infinite loops
+#         if node in seen_nodes:
+#             return
+#
+#         # mark the current node as seen
+#         seen_nodes.add(node)
+#
+#         # if the current node is the amino acid, add the current path to synthesis_paths
+#         if node == amino_acid:
+#             synthesis_paths.append(current_path[:])
+#             return
+#
+#         # recursively search for synthesis paths through the predecessors of the current node
+#         for predecessor in G.predecessors(node):
+#             # check if the maximum path length has been exceeded
+#             if max_length is not None and len(current_path) >= max_length:
+#                 continue
+#             # # if the predecessor is a reversible reaction, check both directions
+#             # if G.nodes[predecessor].get('reversible', False):
+#             #     search_path(predecessor, current_path)
+#             #     reverse_reaction = predecessor + '_reverse'
+#             #     if reverse_reaction in G:
+#             #         search_path(reverse_reaction, current_path)
+#             # # if the predecessor is not a reversible reaction, search in the forward direction
+#             # else:
+#             search_path(predecessor, current_path)
+#
+#         # remove the current node from the current path before returning
+#         current_path.pop()
+#
+#     # find all possible synthesis paths by searching from the amino acid node
+#     for predecessor in G.predecessors(amino_acid):
+#         search_path(predecessor, [])
+#
+#     return synthesis_paths
+
+
+def find_synthesis_paths(G: nx.DiGraph, amino_acid: str):
+    queue = SimpleQueue()
+    queue.__init__()
+    # Initialize a list to store all paths that synthesize the amino acid
+    synthesis_paths = []
+    # Mark all nodes as not available
+    for node in G.nodes:
+        G.nodes[node]['available'] = False
+    # Add AS
+    # G.nodes[amino_acid]['available'] = True
+    # Add D-glucose
+    G.nodes['D-glucose']['available'] = True
+    # Add cofactors
+    for cofactor in constants.cofactors:
+        try:
+            G.nodes[cofactor]['available'] = True
+        except KeyError:
+            print(f'{cofactor} is not in network')
+    # First queue input. Empty digraph and AS
+    queue.put([amino_acid, [], G.copy()])
 
     while not queue.empty():
-        current_node, current_path = queue.get()
-        G.nodes[current_node]['available'] = True
-        current_path.add_node(current_node)
+        current_node, current_path, main_graph = queue.get()
+        # print(f'current_node: {current_node}')
+        main_graph.nodes[current_node]['available'] = True
+        current_path.append(current_node)
         # Check if all required preds are available for the current node
         preds_available = all(G.nodes[pred]['available'] for pred in G.predecessors(current_node))
         # If all preds are available, add the current path to the synthesis_paths list
         if preds_available:
+            # print("pred avaliable")
             graph_found = False
-            for pred in G.predecessors(current_node):
-                current_path.add_node(pred)
-                current_path.add_edge(pred, current_node)
-            path_graph = G.subgraph(current_path).copy()
+            for pred in main_graph.predecessors(current_node):
+                current_path.append(pred)
+            path_graph = main_graph.subgraph(current_path).copy()
+            gfound_nodes = set(path_graph.nodes) 
+            # print(f'set found nodes: {set(path_graph.nodes)}')
             for i, g in enumerate(synthesis_paths):
-                synthesis_paths, graph_found = reaction_paths_unique_test(path_graph, g, synthesis_paths, i)
-                if graph_found:
+                g_nodes = set(g.nodes) 
+                # len_gfound = len(gfound_nodes)
+                # len_g = len(g_nodes)
+                # print(f'set g nodes: {set(g.nodes)}')
+                # print(len(f'found: {len_gfound}'))
+                # print(len(f'g: {len_g}'))
+                # ture if g is within path_graph
+                if gfound_nodes < g_nodes and gfound_nodes != g_nodes:
+                    # print( f'found < g: len found:{len_gfound}, len g: {len_g}' )
+                    graph_found = True
+                    break
+                elif g_nodes < gfound_nodes and g_nodes != gfound_nodes:
+                    # print(f'found > g: len found:{len_gfound}, len g: {len_g}' )
+                    # print(proof_path(G, path_graph, amino_acid))
+                    synthesis_paths[i] = path_graph
+                    graph_found = True
+                    break
+                elif gfound_nodes == g_nodes:
+                    # print(f'found == g: len found:{len_gfound}, len g: {len_g}' )
+                    graph_found = True
                     break
             # If the path_graph is not already in the synthesis_paths list, add it
             if not graph_found:
+                # print("graph not found")
+                # print(proof_path(G, path_graph, amino_acid))
                 synthesis_paths.append(path_graph)
         else: # If not all preds are available, continue the search by enqueueing the preds of the current node
-            for pred in G.predecessors(current_node):
+            # print(list(G.predecessors(current_node)))
+            for pred in main_graph.predecessors(current_node):
                 new_path = current_path.copy()
                 new_path.add_node(pred)
                 new_path.add_edge(pred, current_node)
-                if G.nodes[pred]['available']: # or pred in current_path 
+                if main_graph.nodes[pred]['available'] or pred in current_path.nodes(): # or pred in current_path 
                     continue
-                queue.put([pred, new_path])
-    
+                queue.put([pred, new_path, main_graph.copy()])
     # Return the list of all paths that synthesize the amino acid
-    ret_list  = []
-    for ret in G.nodes:
-        if G.nodes[ret]['available'] == True:
-            ret_list.append(ret)
-    return [G.subgraph(ret_list).copy(), synthesis_paths]
+    return [synthesis_paths]
 
